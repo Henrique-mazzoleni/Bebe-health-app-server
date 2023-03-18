@@ -45,9 +45,9 @@ router.post("/signup", (req, res, next) => {
 
   // Check the users collection if a user with the same email already exists
   Parent.findOne({ email })
-    .then((fount) => {
+    .then((foundParent) => {
       // If the user with the same email already exists, send an error response
-      if (foundUser) {
+      if (foundParent) {
         res.status(400).json({ message: "User already exists." });
         return;
       }
@@ -94,7 +94,7 @@ router.post("/login", (req, res, next) => {
       }
 
       // Compare the provided password with the one saved in the database
-      const passwordCorrect = bcrypt.compareSync(password, foundParent.password);
+      const passwordCorrect = bcrypt.compareSync(password, foundParent.passwordHash);
 
       if (passwordCorrect) {
         // Deconstruct the PaentfoundParent object to omit the password
