@@ -3,13 +3,8 @@ const router = express.Router();
 
 const Parent = require("../models/Parent.model");
 const Child = require("../models/Child.model");
-const {
-  findOne,
-  findById,
-  findOneAndUpdate,
-} = require("../models/Parent.model");
 
-router.get("/child/all", async (req, res, next) => {
+router.get("/all", async (req, res, next) => {
   const { email } = req.payload;
 
   try {
@@ -21,7 +16,7 @@ router.get("/child/all", async (req, res, next) => {
   }
 });
 
-router.get("/child/:childId", async (req, res, next) => {
+router.get("/:childId", async (req, res, next) => {
   const { childId } = req.params;
 
   try {
@@ -33,7 +28,7 @@ router.get("/child/:childId", async (req, res, next) => {
   }
 });
 
-router.post("/child", async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
 
   // Check if any of the fields are provided as empty strings
@@ -71,7 +66,7 @@ router.post("/child", async (req, res, next) => {
   }
 });
 
-router.patch("/child/:childId", async (req, res, next) => {
+router.patch("/:childId", async (req, res, next) => {
   const { childId } = req.params;
 
   const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
@@ -107,7 +102,7 @@ router.patch("/child/:childId", async (req, res, next) => {
   }
 });
 
-router.delete("/child/:childId", async (req, res, next) => {
+router.delete("/:childId", async (req, res, next) => {
   const { childId } = req.params;
   const { email } = req.payload;
 

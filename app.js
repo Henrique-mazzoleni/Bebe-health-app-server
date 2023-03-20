@@ -18,11 +18,11 @@ const app = express();
 require("./config")(app);
 
 // 👇 Start handling routes here
-const indexRoutes = require("./routes/index.routes");
-app.use("/api", isAuthenticated, indexRoutes);
-
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
+
+const childRoutes = require("./routes/child.routes");
+app.use("/api/child", isAuthenticated, childRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
