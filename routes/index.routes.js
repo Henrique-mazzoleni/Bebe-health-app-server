@@ -3,8 +3,13 @@ const router = express.Router();
 
 const Parent = require("../models/Parent.model");
 const Child = require("../models/Child.model");
+const {
+  findOne,
+  findById,
+  findOneAndUpdate,
+} = require("../models/Parent.model");
 
-router.get("/all-children", async (req, res, next) => {
+router.get("/child/all", async (req, res, next) => {
   const { email } = req.payload;
 
   try {
@@ -61,6 +66,61 @@ router.post("/child", async (req, res, next) => {
     await loggedParent.save();
 
     res.status(201).json(newChild);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/child/:childId", async (req, res, next) => {
+  const { childId } = req.params;
+
+  const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
+
+  // Check if any of the fields are provided as empty strings
+  if (
+    name === "" ||
+    dateOfBirth === "" ||
+    gender === "" ||
+    weightAtBirth === "" ||
+    sizeAtBirth === ""
+  ) {
+    res.status(400).json({ message: "All fields must be provided" });
+    return;
+  }
+
+  try {
+    const childToUpdate = await Child.findByIdAndUpdate(
+      childId,
+      {
+        name,
+        dateOfBirth,
+        gender,
+        weightAtBirth,
+        sizeAtBirth,
+      },
+      { new: true }
+    );
+
+    res.status(200).json(childToUpdate);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/child/:childId", async (req, res, next) => {
+  const { childId } = req.params;
+  const { email } = req.payload;
+
+  try {
+    await Parent.findOneAndUpdate(
+      { email },
+      { $pull: { children: childId } },
+      { new: true }
+    );
+
+    await Child.findByIdAndRemove(childId);
+
+    res.status(200).json({ message: "Child removed successfully" });
   } catch (error) {
     next(error);
   }
