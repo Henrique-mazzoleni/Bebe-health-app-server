@@ -21,6 +21,9 @@ require("./config")(app);
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
 
+const parentRoutes = require("./routes/parent.routes");
+app.use("/api/parent", isAuthenticated, parentRoutes);
+
 const childRoutes = require("./routes/child.routes");
 app.use("/api/child", isAuthenticated, childRoutes);
 
