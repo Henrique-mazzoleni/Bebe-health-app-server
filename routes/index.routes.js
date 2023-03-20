@@ -16,6 +16,18 @@ router.get("/all-children", async (req, res, next) => {
   }
 });
 
+router.get("/child/:childId", async (req, res, next) => {
+  const { childId } = req.params;
+
+  try {
+    const currentChild = await Child.findById(childId);
+
+    res.status(200).json(currentChild);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/child", async (req, res, next) => {
   const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
 
