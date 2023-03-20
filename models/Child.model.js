@@ -12,13 +12,17 @@ const childSchema = new Schema(
         type: Date,
         required: [true, "Date of Birth is required."],
       },
-      Gender: {
+      gender: {
         type: String,
         required: [true, "Gender is required."],
       },
       weightAtBirth: {
         type: Number,
         required: [true, "Weight at Birth is required."],
+      },
+      sizeAtBirth: {
+        type: Number,
+        required: [true, "Size at Birth is required."],
       },
       parents: [{type: Schema.Types.ObjectId, ref: "Parent" }],
       feeds: [{type: Schema.Types.ObjectId, ref: "Feeds" }],
