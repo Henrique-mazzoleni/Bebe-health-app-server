@@ -27,6 +27,9 @@ app.use("/api/parent", isAuthenticated, parentRoutes);
 const childRoutes = require("./routes/child.routes");
 app.use("/api/child", isAuthenticated, childRoutes);
 
+const feedRoutes = require("./routes/feeds.routes");
+app.use("/api/feeds", isAuthenticated, feedRoutes);
+
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
 
