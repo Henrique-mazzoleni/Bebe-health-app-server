@@ -99,6 +99,16 @@ router.delete("/", async (req, res, next) => {
   const { email } = req.payload;
 
   try {
+    const parentToRemove = await Parent.findOne({ email });
+    parentToRemove.children.forEach(async (childId) => {
+      const child = await Child.findByIdAndUpdate(
+        childId,
+        { $pull: { parents: parentToRemove._id } },
+        { new: true }
+      );
+      if (child.parents.length === 0) await Child.findByIdAndDelete(childId);
+    });
+
     await Parent.findOneAndRemove({ email });
 
     res.status(200).json({ message: "parent deleted successfully." });
