@@ -54,10 +54,12 @@ router.post("/", async (req, res, next) => {
       gender,
       weightAtBirth,
       sizeAtBirth,
-      parents: [loggedParent],
     });
 
-    loggedParent.children.push(newChild);
+    newChild.parents.push(loggedParent._id);
+    await newChild.save();
+
+    loggedParent.children.push(newChild._id);
     await loggedParent.save();
 
     res.status(201).json(newChild);

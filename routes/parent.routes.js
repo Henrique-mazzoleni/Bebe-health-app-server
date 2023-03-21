@@ -1,16 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const saltRounds = 10;
 
 const Parent = require("../models/Parent.model");
 
 router.get("/", async (req, res, next) => {
-  const { email } = req.payload;
+  const { tokenEmail } = req.payload;
 
   try {
-    const loggedUser = await Parent.findOne({ email });
+    const loggedUser = await Parent.findOne({ tokenEmail });
 
     res.status(200).json(loggedUser);
   } catch (error) {
@@ -19,15 +20,21 @@ router.get("/", async (req, res, next) => {
 });
 
 router.patch("/", async (req, res, next) => {
-  const { email } = req.payload;
+  const { tokenEmail } = req.payload;
   const { newEmail, oldPassword, newPassword, newName } = req.body;
 
   const updatedParent = {};
   try {
-    const loggedParent = await Parent.findOne({ email });
+    const loggedParent = await Parent.findOne({ tokenEmail });
 
     // This regular expression check that the email is of a valid format
     if (newEmail) {
+      const foundParent = await Parent.findOne({ newEmail });
+      if (foundParent) {
+        res.status(400).json({ message: "Email already in use." });
+        return;
+      }
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       if (!emailRegex.test(newEmail)) {
         res.status(400).json({ message: "Provide a valid email address." });
@@ -65,14 +72,22 @@ router.patch("/", async (req, res, next) => {
     if (newName) updatedParent.name = newName;
 
     const parentToUpdate = await Parent.findOneAndUpdate(
-      { email },
+      { tokenEmail },
       updatedParent,
       {
         new: true,
       }
     );
 
-    res.status(200).json(parentToUpdate);
+    const { _id, email, name } = parentToUpdate;
+    const payload = { _id, email, name };
+
+    const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+      algorithm: "HS256",
+      expiresIn: "6h",
+    });
+
+    res.status(200).json({ updatedParent: parentToUpdate, authToken });
   } catch (error) {
     next(error);
   }
