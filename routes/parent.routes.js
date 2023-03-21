@@ -78,4 +78,16 @@ router.patch("/", async (req, res, next) => {
   }
 });
 
+router.delete("/", async (req, res, next) => {
+  const { email } = req.payload;
+
+  try {
+    await Parent.findOneAndRemove({ email });
+
+    res.status(200).json({ message: "parent deleted successfully." });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
