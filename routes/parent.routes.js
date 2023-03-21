@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const saltRounds = 10;
 
 const Parent = require("../models/Parent.model");
+const Invite = require("../models/Invite.model");
 
 router.get("/", async (req, res, next) => {
   const { tokenEmail } = req.payload;
@@ -100,6 +101,27 @@ router.delete("/", async (req, res, next) => {
     await Parent.findOneAndRemove({ email });
 
     res.status(200).json({ message: "parent deleted successfully." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/invite", async (req, res, next) => {
+  const { email } = req.payload;
+  const { emailToInvite, childId } = req.body;
+
+  try {
+    const invitingParent = await Parent.findOne({ email });
+    const parentToInvite = await Parent.findOne({ email: emailToInvite });
+
+    const invitation = await Invite.create({
+      invitationFrom: invitingParent._id,
+      childToAdd: childId,
+    });
+    parentToInvite.invitations.push(invitation._id);
+    await parentToInvite.save();
+
+    res.status(200).json(invitation);
   } catch (error) {
     next(error);
   }
