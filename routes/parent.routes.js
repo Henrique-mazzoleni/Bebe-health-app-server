@@ -7,6 +7,7 @@ const saltRounds = 10;
 
 const Parent = require("../models/Parent.model");
 const Invite = require("../models/Invite.model");
+const Child = require("../models/Child.model");
 
 router.get("/", async (req, res, next) => {
   const { tokenEmail } = req.payload;
@@ -122,6 +123,29 @@ router.post("/invite", async (req, res, next) => {
     await parentToInvite.save();
 
     res.status(200).json(invitation);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/accept", async (req, res, next) => {
+  const { email } = req.payload;
+  const { inviteId } = req.body;
+
+  try {
+    const invite = await Invite.findById(inviteId);
+    const parentToAccept = await Parent.findOne({ email });
+    const childToAdd = await Child.findById(invite.childToAdd);
+
+    parentToAccept.children.push(childToAdd._id);
+    parentToAccept.save();
+
+    childToAdd.parents.push(parentToAccept._id);
+    childToAdd.save();
+
+    await Invite.findByIdAndRemove(inviteId);
+
+    res.status(200).json(childToAdd);
   } catch (error) {
     next(error);
   }
