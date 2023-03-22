@@ -4,9 +4,22 @@ const router = express.Router();
 const Child = require("../models/Child.model");
 const Feeds = require("../models/Feeds.model");
 
-router.post("/", async (req, res, next) => {
+router.get("/:childId", async (req, res, next) => {
+  const { childId } = req.params;
+
+  try {
+    const child = await Child.findById(childId).populate("feeds");
+
+    res.status(200).json(child.feeds);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:childId", async (req, res, next) => {
+  const { childId } = req.params;
+
   const {
-    childId,
     dateAndTime,
     kind,
     rightBreastDuration,
@@ -44,7 +57,19 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.patch("/:feedId", async (req, res, next) => {
+router.get("/single/:feedId", async (req, res, next) => {
+  const { feedId } = req.params;
+
+  try {
+    const feed = await Feeds.findById(feedId);
+
+    res.status(200).json(feed);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/single/:feedId", async (req, res, next) => {
   const { feedId } = req.params;
   const feedUpdate = { ...req.body };
 
@@ -61,6 +86,18 @@ router.patch("/:feedId", async (req, res, next) => {
       });
     const updatedFeed = await Feeds.findById(feedId);
     res.status(200).json(updatedFeed);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/single/:feedId", async (req, res, next) => {
+  const { feedId } = req.params;
+
+  try {
+    await Feeds.findByIdAndRemove(feedId);
+
+    res.status(200).json({ message: "feed removed successfully" });
   } catch (error) {
     next(error);
   }
