@@ -4,6 +4,16 @@ const router = express.Router();
 const Child = require("../models/Child.model");
 const Sleep = require("../models/Sleep.model");
 
+const getHoursDuration = (start, end) => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  return (
+    parseInt(
+      ((endDate.getTime() - startDate.getTime()) / 1000 / 60 / 60) * 10
+    ) / 10
+  );
+};
+
 router.get("/:childId", async (req, res, next) => {
   const { childId } = req.params;
 
@@ -27,6 +37,8 @@ router.post("/:childId", async (req, res, next) => {
       .json({ message: "date, start and end Time fields must be provided" });
     return;
   }
+
+  newSleep.duration = getHoursDuration(newSleep.startTime, newSleep.endTime);
 
   try {
     const sleep = await Sleep.create(newSleep);
@@ -56,6 +68,18 @@ router.patch("/single/:sleepId", async (req, res, next) => {
   const sleepUpdate = { ...req.body };
 
   try {
+    const sleep = await Sleep.findById(sleepId);
+
+    if (sleepUpdate.startTime || sleepUpdate.endTime) {
+      const updatedStart = sleepUpdate.startTime
+        ? sleepUpdate.startTime
+        : sleep.startTime;
+      const updatedEnd = sleepUpdate.endTime
+        ? sleepUpdate.endTime
+        : sleep.endTime;
+      sleepUpdate.duration = getHoursDuration(updatedStart, updatedEnd);
+    }
+
     const updatedSleep = await Sleep.findByIdAndUpdate(sleepId, sleepUpdate, {
       new: true,
     });
