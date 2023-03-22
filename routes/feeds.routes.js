@@ -19,31 +19,11 @@ router.get("/:childId", async (req, res, next) => {
 router.post("/:childId", async (req, res, next) => {
   const { childId } = req.params;
 
-  const {
-    dateAndTime,
-    kind,
-    rightBreastDuration,
-    leftBreastDuration,
-    bottleVolume,
-    throwUp,
-  } = req.body;
+  const createObject = { ...req.body };
 
-  if (dateAndTime === "" || kind === "") {
+  if (!createObject.dateAndTime || !createObject.kind) {
     res.status(400).json({ message: "date and kind fields must be provided" });
     return;
-  }
-
-  const createObject = {
-    dateAndTime,
-    kind,
-    throwUp,
-  };
-
-  if (bottleVolume) {
-    createObject.bottleVolume = bottleVolume;
-  } else {
-    createObject.rightBreastDuration = rightBreastDuration;
-    createObject.leftBreastDuration = leftBreastDuration;
   }
 
   try {

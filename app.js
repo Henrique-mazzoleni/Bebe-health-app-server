@@ -33,6 +33,9 @@ app.use("/api/feeds", isAuthenticated, feedRoutes);
 const sleepRoutes = require("./routes/sleep.routes");
 app.use("/api/sleep", isAuthenticated, sleepRoutes);
 
+const changeRoutes = require("./routes/change.routes");
+app.use("/api/change", isAuthenticated, changeRoutes);
+
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);
 
