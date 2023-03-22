@@ -44,4 +44,26 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.patch("/:feedId", async (req, res, next) => {
+  const { feedId } = req.params;
+  const feedUpdate = { ...req.body };
+
+  try {
+    await Feeds.findByIdAndUpdate(feedId, feedUpdate, {
+      new: true,
+    });
+
+    if (feedUpdate.kind === "breast")
+      await Feeds.findByIdAndUpdate(feedId, { $unset: { bottleVolume: "" } });
+    else
+      await Feeds.findByIdAndUpdate(feedId, {
+        $unset: { rightBreastDuration: "", leftBreastDuration: "" },
+      });
+    const updatedFeed = await Feeds.findById(feedId);
+    res.status(200).json(updatedFeed);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
