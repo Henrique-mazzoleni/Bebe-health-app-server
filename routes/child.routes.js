@@ -3,6 +3,9 @@ const router = express.Router();
 
 const Parent = require("../models/Parent.model");
 const Child = require("../models/Child.model");
+const Feeds = require("../models/Feeds.model");
+const Change = require("../models/Change.model");
+const Sleep = require("../models/Sleep.model");
 
 router.get("/all", async (req, res, next) => {
   const { email } = req.payload;
@@ -113,6 +116,18 @@ router.delete("/:childId", async (req, res, next) => {
       { email },
       { $pull: { children: childId } },
       { new: true }
+    );
+
+    const childToDelete = await Child.findById(childId);
+
+    childToDelete.feeds.forEach(
+      async (feedId) => await Feeds.findByIdAndRemove(feedId)
+    );
+    childToDelete.change.forEach(
+      async (changeId) => await Change.findByIdAndRemove(changeId)
+    );
+    childToDelete.sleep.forEach(
+      async (sleepId) => await Sleep.findByIdAndRemove(sleepId)
     );
 
     await Child.findByIdAndRemove(childId);
