@@ -91,11 +91,13 @@ router.patch("/single/:feedId", async (req, res, next) => {
   }
 });
 
-router.delete("/single/:feedId", async (req, res, next) => {
-  const { feedId } = req.params;
+router.delete("/:childId/:feedId", async (req, res, next) => {
+  const { childId, feedId } = req.params;
 
   try {
     await Feeds.findByIdAndRemove(feedId);
+
+    await Child.findByIdAndUpdate(childId, { $pull: { feeds: feedId } });
 
     res.status(200).json({ message: "feed removed successfully" });
   } catch (error) {
