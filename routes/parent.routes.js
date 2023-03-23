@@ -13,10 +13,26 @@ router.get("/", async (req, res, next) => {
   const { email } = req.payload;
 
   try {
-    const loggedUser = await Parent.findOne({ email }).populate("children").populate("invitations");
+    const loggedUser = await Parent.findOne({ email })
+      .populate("children")
+      .populate("invitations")
+      .populate({
+        path: "invitations",
+        populate: {
+          path: "childToAdd",
+          model: "Child",
+        },
+      })
+      .populate({
+        path: "invitations",
+        populate: {
+          path: "invitationFrom",
+          model: "Parent",
+        },
+      });
 
     res.status(200).json(loggedUser);
-    console.log(loggedUser)
+    console.log(loggedUser);
   } catch (error) {
     next(error);
   }
@@ -124,7 +140,13 @@ router.post("/invite", async (req, res, next) => {
 
   try {
     const invitingParent = await Parent.findOne({ email });
+
     const parentToInvite = await Parent.findOne({ email: emailToInvite });
+    if (!parentToInvite) {
+      // If the user is not found, send an error response
+      res.status(401).json({ message: "User not found." });
+      return;
+    }
 
     const invitation = await Invite.create({
       invitationFrom: invitingParent._id,

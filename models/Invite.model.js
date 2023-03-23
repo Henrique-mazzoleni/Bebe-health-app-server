@@ -3,7 +3,7 @@ const { model, Schema } = require("mongoose");
 const inviteSchema = new Schema(
   {
     invitationFrom: { type: Schema.Types.ObjectId, ref: "Parent" },
-    childToAdd: { type: Schema.Types.ObjectId, ref: "Chile" },
+    childToAdd: { type: Schema.Types.ObjectId, ref: "Child" },
   },
   { timestamps: true }
 );
