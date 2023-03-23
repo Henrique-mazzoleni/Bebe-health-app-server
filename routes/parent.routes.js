@@ -10,24 +10,25 @@ const Invite = require("../models/Invite.model");
 const Child = require("../models/Child.model");
 
 router.get("/", async (req, res, next) => {
-  const { tokenEmail } = req.payload;
+  const { email } = req.payload;
 
   try {
-    const loggedUser = await Parent.findOne({ tokenEmail });
+    const loggedUser = await Parent.findOne({ email }).populate("children").populate("invitations");
 
     res.status(200).json(loggedUser);
+    console.log(loggedUser)
   } catch (error) {
     next(error);
   }
 });
 
 router.patch("/", async (req, res, next) => {
-  const { tokenEmail } = req.payload;
+  const { email } = req.payload;
   const { newEmail, oldPassword, newPassword, newName } = req.body;
 
   const updatedParent = {};
   try {
-    const loggedParent = await Parent.findOne({ tokenEmail });
+    const loggedParent = await Parent.findOne({ email });
 
     // This regular expression check that the email is of a valid format
     if (newEmail) {
@@ -74,7 +75,7 @@ router.patch("/", async (req, res, next) => {
     if (newName) updatedParent.name = newName;
 
     const parentToUpdate = await Parent.findOneAndUpdate(
-      { tokenEmail },
+      { email },
       updatedParent,
       {
         new: true,
