@@ -8,6 +8,9 @@ const saltRounds = 10;
 const Parent = require("../models/Parent.model");
 const Invite = require("../models/Invite.model");
 const Child = require("../models/Child.model");
+const Feeds = require("../models/Feeds.model");
+const Change = require("../models/Change.model");
+const Sleep = require("../models/Sleep.model");
 
 router.get("/", async (req, res, next) => {
   const { email } = req.payload;
@@ -123,8 +126,24 @@ router.delete("/", async (req, res, next) => {
         { $pull: { parents: parentToRemove._id } },
         { new: true }
       );
-      if (child.parents.length === 0) await Child.findByIdAndDelete(childId);
+      if (child?.parents.length === 0) {
+        child.feeds.forEach(
+          async (feedId) => await Feeds.findByIdAndRemove(feedId)
+        );
+        child.change.forEach(
+          async (changeId) => await Change.findByIdAndRemove(changeId)
+        );
+        child.sleep.forEach(
+          async (sleepId) => await Sleep.findByIdAndRemove(sleepId)
+        );
+
+        await Child.findByIdAndDelete(childId);
+      }
     });
+
+    parentToRemove.invitations.forEach(
+      async (inviteId) => await Invite.findByIdAndRemove(inviteId)
+    );
 
     await Parent.findOneAndRemove({ email });
 
@@ -148,6 +167,13 @@ router.post("/invite", async (req, res, next) => {
       return;
     }
 
+    if (parentToInvite.children.includes(childId)) {
+      res
+        .status(401)
+        .json({ message: "User already parent of selected child." });
+      return;
+    }
+
     const invitation = await Invite.create({
       invitationFrom: invitingParent._id,
       childToAdd: childId,
@@ -167,6 +193,7 @@ router.post("/accept", async (req, res, next) => {
 
   try {
     const invite = await Invite.findById(inviteId);
+    console.log(invite);
     const parentToAccept = await Parent.findOne({ email });
     const childToAdd = await Child.findById(invite.childToAdd);
 
@@ -179,6 +206,24 @@ router.post("/accept", async (req, res, next) => {
     await Invite.findByIdAndRemove(inviteId);
 
     res.status(200).json(childToAdd);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/deny/:inviteId", async (req, res, next) => {
+  const { inviteId } = req.params;
+  const { email } = req.payload;
+
+  try {
+    await Parent.findOneAndUpdate(
+      { email },
+      { $pull: { invitations: inviteId } }
+    );
+
+    await Invite.findByIdAndRemove(inviteId);
+
+    res.status(200).json({ message: "invite denied" });
   } catch (error) {
     next(error);
   }
