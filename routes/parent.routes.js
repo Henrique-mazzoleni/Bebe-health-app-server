@@ -101,7 +101,7 @@ router.patch("/", async (req, res, next) => {
       }
     );
 
-    const { _id, email, name } = parentToUpdate;
+    const { _id, name } = parentToUpdate;
     const payload = { _id, email, name };
 
     const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
