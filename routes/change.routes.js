@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
+const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+
 const Child = require("../models/Child.model");
 const Change = require("../models/Change.model");
 
-router.get("/:childId", async (req, res, next) => {
+router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
-
+  // through the id provided in the url paramater the route retrieves the document in the database and returns it to the client
   try {
     const child = await Child.findById(childId).populate("change");
 
@@ -16,7 +18,7 @@ router.get("/:childId", async (req, res, next) => {
   }
 });
 
-router.post("/:childId", async (req, res, next) => {
+router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   const newChange = { ...req.body };
@@ -68,7 +70,7 @@ router.patch("/single/:changeId", async (req, res, next) => {
   }
 });
 
-router.delete("/:childId/:changeId", async (req, res, next) => {
+router.delete("/:childId/:changeId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId, changeId } = req.params;
 
   try {

@@ -4,7 +4,9 @@ const router = express.Router();
 const Child = require("../models/Child.model");
 const Feeds = require("../models/Feeds.model");
 
-router.get("/:childId", async (req, res, next) => {
+const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+
+router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   try {
@@ -16,7 +18,7 @@ router.get("/:childId", async (req, res, next) => {
   }
 });
 
-router.post("/:childId", async (req, res, next) => {
+router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   const createObject = { ...req.body };
@@ -71,7 +73,7 @@ router.patch("/single/:feedId", async (req, res, next) => {
   }
 });
 
-router.delete("/:childId/:feedId", async (req, res, next) => {
+router.delete("/:childId/:feedId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId, feedId } = req.params;
 
   try {

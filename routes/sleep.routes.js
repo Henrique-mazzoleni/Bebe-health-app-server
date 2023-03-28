@@ -4,6 +4,8 @@ const router = express.Router();
 const Child = require("../models/Child.model");
 const Sleep = require("../models/Sleep.model");
 
+const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+
 const getHoursDuration = (start, end) => {
   const startDate = new Date(start);
   const endDate = new Date(end);
@@ -14,7 +16,7 @@ const getHoursDuration = (start, end) => {
   );
 };
 
-router.get("/:childId", async (req, res, next) => {
+router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   try {
@@ -26,7 +28,7 @@ router.get("/:childId", async (req, res, next) => {
   }
 });
 
-router.post("/:childId", async (req, res, next) => {
+router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   const newSleep = { ...req.body };
@@ -90,7 +92,7 @@ router.patch("/single/:sleepId", async (req, res, next) => {
   }
 });
 
-router.delete("/:childId/:sleepId", async (req, res, next) => {
+router.delete("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId, sleepId } = req.params;
 
   try {

@@ -7,6 +7,8 @@ const Feeds = require("../models/Feeds.model");
 const Change = require("../models/Change.model");
 const Sleep = require("../models/Sleep.model");
 
+const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+
 router.get("/all", async (req, res, next) => {
   const { email } = req.payload;
 
@@ -19,7 +21,7 @@ router.get("/all", async (req, res, next) => {
   }
 });
 
-router.get("/:childId", async (req, res, next) => {
+router.get("/:childId", isChildOfLoggedParent ,async (req, res, next) => {
   const { childId } = req.params;
 
   try {
@@ -71,7 +73,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.patch("/:childId", async (req, res, next) => {
+router.patch("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
@@ -107,7 +109,7 @@ router.patch("/:childId", async (req, res, next) => {
   }
 });
 
-router.delete("/:childId", async (req, res, next) => {
+router.delete("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
   const { email } = req.payload;
 
