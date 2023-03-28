@@ -23,16 +23,20 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
 
   const newChange = { ...req.body };
 
+  // checks if all required fields were provided
   if (!newChange.dateAndTime || !newChange.kind || !newChange.consistency) {
     res.status(400).json({ message: "All fields must be provided" });
     return;
   }
 
   try {
+    // creates new change document
     const change = await Change.create(newChange);
 
+    // links new object to child
     await Child.findByIdAndUpdate(childId, { $push: { change: change._id } });
 
+    // returns the new document
     res.status(200).json(change);
   } catch (error) {
     next(error);
@@ -42,6 +46,7 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
 router.get("/single/:changeId", async (req, res, next) => {
   const { changeId } = req.params;
 
+  // finds document from provided Id and returns it
   try {
     const change = await Change.findById(changeId);
 
@@ -55,6 +60,7 @@ router.patch("/single/:changeId", async (req, res, next) => {
   const { changeId } = req.params;
   const changeUpdate = { ...req.body };
 
+  // updates document and returns the updated version
   try {
     const updatedChange = await Change.findByIdAndUpdate(
       changeId,
@@ -74,8 +80,10 @@ router.delete("/:childId/:changeId", isChildOfLoggedParent, async (req, res, nex
   const { childId, changeId } = req.params;
 
   try {
+    // removes the document from the database
     await Change.findByIdAndRemove(changeId);
 
+    // removes the link from related document
     await Child.findByIdAndUpdate(childId, { $pull: { change: changeId } });
 
     res.status(200).json({ message: "change removed successfully" });
