@@ -28,13 +28,13 @@ const childRoutes = require("./routes/child.routes");
 app.use("/api/child", isAuthenticated, childRoutes);
 
 const feedRoutes = require("./routes/feeds.routes");
-app.use("/api/feeds", isAuthenticated, feedRoutes);
+app.use("/api/feeds/", isAuthenticated, feedRoutes);
 
-const sleepRoutes = require("./routes/sleep.routes");
-app.use("/api/sleep", isAuthenticated, sleepRoutes);
+const sleepRoutes = require("./routes/sleeps.routes");
+app.use("/api/sleeps/", isAuthenticated, sleepRoutes);
 
-const changeRoutes = require("./routes/change.routes");
-app.use("/api/change", isAuthenticated, changeRoutes);
+const changeRoutes = require("./routes/changes.routes");
+app.use("/api/changes/", isAuthenticated, changeRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);

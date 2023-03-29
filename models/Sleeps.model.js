@@ -1,6 +1,6 @@
 const { model, Schema } = require("mongoose");
 
-const sleepSchema = new Schema(
+const sleepsSchema = new Schema(
   {
     startTime: {
       type: Date,
@@ -23,6 +23,6 @@ const sleepSchema = new Schema(
   }
 );
 
-const Sleep = model("Sleep", sleepSchema);
+const Sleeps = model("Sleeps", sleepsSchema);
 
-module.exports = Sleep;
+module.exports = Sleeps;

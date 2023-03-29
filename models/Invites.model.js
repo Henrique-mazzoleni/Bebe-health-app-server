@@ -1,6 +1,6 @@
 const { model, Schema } = require("mongoose");
 
-const inviteSchema = new Schema(
+const invitesSchema = new Schema(
   {
     invitationFrom: { type: Schema.Types.ObjectId, ref: "Parent" },
     childToAdd: { type: Schema.Types.ObjectId, ref: "Child" },
@@ -8,6 +8,6 @@ const inviteSchema = new Schema(
   { timestamps: true }
 );
 
-const Invite = model("Invite", inviteSchema);
+const Invites = model("Invites", invitesSchema);
 
-module.exports = Invite;
+module.exports = Invites;

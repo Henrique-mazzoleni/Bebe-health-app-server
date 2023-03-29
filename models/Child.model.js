@@ -26,8 +26,8 @@ const childSchema = new Schema(
       },
       parents: [{type: Schema.Types.ObjectId, ref: "Parent" }],
       feeds: [{type: Schema.Types.ObjectId, ref: "Feeds" }],
-      change: [{type: Schema.Types.ObjectId, ref: "Change" }],
-      sleep: [{type: Schema.Types.ObjectId, ref: "Sleep" }],
+      changes: [{type: Schema.Types.ObjectId, ref: "Changes" }],
+      sleeps: [{type: Schema.Types.ObjectId, ref: "Sleeps" }],
     },
     
     {

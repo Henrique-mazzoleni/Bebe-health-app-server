@@ -8,6 +8,7 @@ const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.m
 
 router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
+  console.log(childId);
 
   try {
     const child = await Child.findById(childId).populate("feeds");
@@ -39,7 +40,7 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   }
 });
 
-router.get("/single/:feedId", async (req, res, next) => {
+router.get("/:childId/:feedId", isChildOfLoggedParent, async (req, res, next) => {
   const { feedId } = req.params;
 
   try {
@@ -51,7 +52,7 @@ router.get("/single/:feedId", async (req, res, next) => {
   }
 });
 
-router.patch("/single/:feedId", async (req, res, next) => {
+router.patch("/:childId/:feedId", isChildOfLoggedParent, async (req, res, next) => {
   const { feedId } = req.params;
   const feedUpdate = { ...req.body };
 

@@ -18,7 +18,7 @@ const parentSchema = new Schema(
       required: [true, "Name is required."],
     },
     children: [{ type: Schema.Types.ObjectId, ref: "Child" }],
-    invitations: [{ type: Schema.Types.ObjectId, ref: "Invite" }],
+    invitations: [{ type: Schema.Types.ObjectId, ref: "Invites" }],
   },
   {
     timestamps: true,

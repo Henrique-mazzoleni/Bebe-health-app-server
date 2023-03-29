@@ -4,8 +4,8 @@ const router = express.Router();
 const Parent = require("../models/Parent.model");
 const Child = require("../models/Child.model");
 const Feeds = require("../models/Feeds.model");
-const Change = require("../models/Change.model");
-const Sleep = require("../models/Sleep.model");
+const Change = require("../models/Changes.model");
+const Sleep = require("../models/Sleeps.model");
 
 const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
 
@@ -125,10 +125,10 @@ router.delete("/:childId", isChildOfLoggedParent, async (req, res, next) => {
     childToDelete.feeds.forEach(
       async (feedId) => await Feeds.findByIdAndRemove(feedId)
     );
-    childToDelete.change.forEach(
+    childToDelete.changes.forEach(
       async (changeId) => await Change.findByIdAndRemove(changeId)
     );
-    childToDelete.sleep.forEach(
+    childToDelete.sleeps.forEach(
       async (sleepId) => await Sleep.findByIdAndRemove(sleepId)
     );
 

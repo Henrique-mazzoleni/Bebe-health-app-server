@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Child = require("../models/Child.model");
-const Sleep = require("../models/Sleep.model");
+const Sleeps = require("../models/Sleeps.model");
 
 const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
 
@@ -20,9 +20,9 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   try {
-    const child = await Child.findById(childId).populate("sleep");
+    const child = await Child.findById(childId).populate("sleeps");
 
-    res.status(200).json(child.sleep);
+    res.status(200).json(child.sleeps);
   } catch (error) {
     next(error);
   }
@@ -43,9 +43,9 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   newSleep.duration = getHoursDuration(newSleep.startTime, newSleep.endTime);
 
   try {
-    const sleep = await Sleep.create(newSleep);
+    const sleep = await Sleeps.create(newSleep);
 
-    await Child.findByIdAndUpdate(childId, { $push: { sleep: sleep._id } });
+    await Child.findByIdAndUpdate(childId, { $push: { sleeps: sleep._id } });
 
     res.status(200).json(sleep);
   } catch (error) {
@@ -53,11 +53,11 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   }
 });
 
-router.get("/single/:sleepId", async (req, res, next) => {
+router.get("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
   const { sleepId } = req.params;
 
   try {
-    const sleep = await Sleep.findById(sleepId);
+    const sleep = await Sleeps.findById(sleepId);
 
     res.status(200).json(sleep);
   } catch (error) {
@@ -65,12 +65,12 @@ router.get("/single/:sleepId", async (req, res, next) => {
   }
 });
 
-router.patch("/single/:sleepId", async (req, res, next) => {
+router.patch("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
   const { sleepId } = req.params;
   const sleepUpdate = { ...req.body };
 
   try {
-    const sleep = await Sleep.findById(sleepId);
+    const sleep = await Sleeps.findById(sleepId);
 
     if (sleepUpdate.startTime || sleepUpdate.endTime) {
       const updatedStart = sleepUpdate.startTime
@@ -82,7 +82,7 @@ router.patch("/single/:sleepId", async (req, res, next) => {
       sleepUpdate.duration = getHoursDuration(updatedStart, updatedEnd);
     }
 
-    const updatedSleep = await Sleep.findByIdAndUpdate(sleepId, sleepUpdate, {
+    const updatedSleep = await Sleeps.findByIdAndUpdate(sleepId, sleepUpdate, {
       new: true,
     });
 
@@ -96,9 +96,9 @@ router.delete("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next
   const { childId, sleepId } = req.params;
 
   try {
-    await Sleep.findByIdAndRemove(sleepId);
+    await Sleeps.findByIdAndRemove(sleepId);
 
-    await Child.findByIdAndUpdate(childId, { $pull: { sleep: sleepId } });
+    await Child.findByIdAndUpdate(childId, { $pull: { sleeps: sleepId } });
 
     res.status(200).json({ message: "sleep removed successfully" });
   } catch (error) {

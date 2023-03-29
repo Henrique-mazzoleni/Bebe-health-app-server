@@ -1,6 +1,6 @@
 const { model, Schema } = require("mongoose");
 
-const changeSchema = new Schema(
+const changesSchema = new Schema(
   {
     dateAndTime: {
       type: Date,
@@ -23,6 +23,6 @@ const changeSchema = new Schema(
   }
 );
 
-const Change = model("Change", changeSchema);
+const Changes = model("Changes", changesSchema);
 
-module.exports = Change;
+module.exports = Changes;

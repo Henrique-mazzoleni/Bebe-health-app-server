@@ -6,11 +6,11 @@ const jwt = require("jsonwebtoken");
 const saltRounds = 10;
 
 const Parent = require("../models/Parent.model");
-const Invite = require("../models/Invite.model");
+const Invites = require("../models/Invites.model");
 const Child = require("../models/Child.model");
 const Feeds = require("../models/Feeds.model");
-const Change = require("../models/Change.model");
-const Sleep = require("../models/Sleep.model");
+const Changes = require("../models/Changes.model");
+const Sleeps = require("../models/Sleeps.model");
 
 router.get("/", async (req, res, next) => {
   const { email } = req.payload;
@@ -35,7 +35,6 @@ router.get("/", async (req, res, next) => {
       });
 
     res.status(200).json(loggedUser);
-    console.log(loggedUser);
   } catch (error) {
     next(error);
   }
@@ -130,11 +129,11 @@ router.delete("/", async (req, res, next) => {
         child.feeds.forEach(
           async (feedId) => await Feeds.findByIdAndRemove(feedId)
         );
-        child.change.forEach(
-          async (changeId) => await Change.findByIdAndRemove(changeId)
+        child.changes.forEach(
+          async (changeId) => await Changes.findByIdAndRemove(changeId)
         );
-        child.sleep.forEach(
-          async (sleepId) => await Sleep.findByIdAndRemove(sleepId)
+        child.sleeps.forEach(
+          async (sleepId) => await Sleeps.findByIdAndRemove(sleepId)
         );
 
         await Child.findByIdAndDelete(childId);
@@ -142,7 +141,7 @@ router.delete("/", async (req, res, next) => {
     });
 
     parentToRemove.invitations.forEach(
-      async (inviteId) => await Invite.findByIdAndRemove(inviteId)
+      async (inviteId) => await Invites.findByIdAndRemove(inviteId)
     );
 
     await Parent.findOneAndRemove({ email });
@@ -174,7 +173,7 @@ router.post("/invite", async (req, res, next) => {
       return;
     }
 
-    const invitation = await Invite.create({
+    const invitation = await Invites.create({
       invitationFrom: invitingParent._id,
       childToAdd: childId,
     });
@@ -187,12 +186,12 @@ router.post("/invite", async (req, res, next) => {
   }
 });
 
-router.post("/accept", async (req, res, next) => {
+router.post("/invite/accept/:inviteId", async (req, res, next) => {
   const { email } = req.payload;
-  const { inviteId } = req.body;
+  const { inviteId } = req.params;
 
   try {
-    const invite = await Invite.findById(inviteId);
+    const invite = await Invites.findById(inviteId);
     console.log(invite);
     const parentToAccept = await Parent.findOne({ email });
     const childToAdd = await Child.findById(invite.childToAdd);
@@ -203,7 +202,7 @@ router.post("/accept", async (req, res, next) => {
     childToAdd.parents.push(parentToAccept._id);
     childToAdd.save();
 
-    await Invite.findByIdAndRemove(inviteId);
+    await Invites.findByIdAndRemove(inviteId);
 
     res.status(200).json(childToAdd);
   } catch (error) {
@@ -211,7 +210,7 @@ router.post("/accept", async (req, res, next) => {
   }
 });
 
-router.delete("/deny/:inviteId", async (req, res, next) => {
+router.delete("/invite/deny/:inviteId", async (req, res, next) => {
   const { inviteId } = req.params;
   const { email } = req.payload;
 
@@ -221,9 +220,9 @@ router.delete("/deny/:inviteId", async (req, res, next) => {
       { $pull: { invitations: inviteId } }
     );
 
-    await Invite.findByIdAndRemove(inviteId);
+    await Invites.findByIdAndRemove(inviteId);
 
-    res.status(200).json({ message: "invite denied" });
+    res.status(200).json({ message: "invitation declined" });
   } catch (error) {
     next(error);
   }
