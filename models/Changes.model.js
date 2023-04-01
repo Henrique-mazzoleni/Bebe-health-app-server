@@ -10,7 +10,7 @@ const changesSchema = new Schema(
     },
     kind: {
       type: String,
-      enum: ["wet", "dirty", "both"],
+      enum: ["wet", "dirty", "both", "nothing"],
       required: [true, "type is required."],
     },
     consistency: {
