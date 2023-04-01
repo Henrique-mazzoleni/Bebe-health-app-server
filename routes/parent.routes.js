@@ -192,7 +192,12 @@ router.post("/invite/accept/:inviteId", async (req, res, next) => {
 
   try {
     const invite = await Invites.findById(inviteId);
-    console.log(invite);
+
+    if (!invite) {
+      res.status(404).json({ message: "invitation not found!" });
+      return;
+    }
+
     const parentToAccept = await Parent.findOne({ email });
     const childToAdd = await Child.findById(invite.childToAdd);
 
@@ -215,6 +220,13 @@ router.delete("/invite/deny/:inviteId", async (req, res, next) => {
   const { email } = req.payload;
 
   try {
+    const invite = await Invites.findById(inviteId);
+
+    if (!invite) {
+      res.status(404).json({ message: "invitation not found!" });
+      return;
+    }
+
     await Parent.findOneAndUpdate(
       { email },
       { $pull: { invitations: inviteId } }

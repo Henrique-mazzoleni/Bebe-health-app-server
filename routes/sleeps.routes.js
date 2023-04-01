@@ -22,6 +22,11 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   try {
     const child = await Child.findById(childId).populate("sleeps");
 
+    if (!child) {
+      res.status(404).json({ message: "child not found!" });
+      return;
+    }
+
     res.status(200).json(child.sleeps);
   } catch (error) {
     next(error);
@@ -43,7 +48,19 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   newSleep.duration = getHoursDuration(newSleep.startTime, newSleep.endTime);
 
   try {
-    const sleep = await Sleeps.create(newSleep);
+    const child = await Child.findById(childId);
+
+    if (!child) {
+      res.status(404).json({ message: "child not found!" });
+      return;
+    }
+
+    const sleep = await Sleeps.findById(sleepId);
+
+    if (!sleep) {
+      res.status(404).json({ message: "sleep not found!" });
+      return;
+    }
 
     await Child.findByIdAndUpdate(childId, { $push: { sleeps: sleep._id } });
 
@@ -53,49 +70,99 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   }
 });
 
-router.get("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
-  const { sleepId } = req.params;
+router.get(
+  "/:childId/:sleepId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { sleepId } = req.params;
 
-  try {
-    const sleep = await Sleeps.findById(sleepId);
+    try {
+      const child = await Child.findById(childId);
 
-    res.status(200).json(sleep);
-  } catch (error) {
-    next(error);
-  }
-});
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
 
-router.patch("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
-  const { sleepId } = req.params;
-  const sleepUpdate = { ...req.body };
+      const sleep = await Sleeps.findById(sleepId);
 
-  try {
-    const sleep = await Sleeps.findById(sleepId);
+      if (!sleep) {
+        res.status(404).json({ message: "sleep not found!" });
+        return;
+      }
 
-    if (sleepUpdate.startTime || sleepUpdate.endTime) {
-      const updatedStart = sleepUpdate.startTime
-        ? sleepUpdate.startTime
-        : sleep.startTime;
-      const updatedEnd = sleepUpdate.endTime
-        ? sleepUpdate.endTime
-        : sleep.endTime;
-      sleepUpdate.duration = getHoursDuration(updatedStart, updatedEnd);
+      res.status(200).json(sleep);
+    } catch (error) {
+      next(error);
     }
-
-    const updatedSleep = await Sleeps.findByIdAndUpdate(sleepId, sleepUpdate, {
-      new: true,
-    });
-
-    res.status(200).json(updatedSleep);
-  } catch (error) {
-    next(error);
   }
-});
+);
+
+router.patch(
+  "/:childId/:sleepId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { sleepId } = req.params;
+    const sleepUpdate = { ...req.body };
+
+    try {
+      const child = await Child.findById(childId);
+
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+
+      const sleep = await Sleeps.findById(sleepId);
+
+      if (!sleep) {
+        res.status(404).json({ message: "sleep not found!" });
+        return;
+      }
+
+      if (sleepUpdate.startTime || sleepUpdate.endTime) {
+        const updatedStart = sleepUpdate.startTime
+          ? sleepUpdate.startTime
+          : sleep.startTime;
+        const updatedEnd = sleepUpdate.endTime
+          ? sleepUpdate.endTime
+          : sleep.endTime;
+        sleepUpdate.duration = getHoursDuration(updatedStart, updatedEnd);
+      }
+
+      const updatedSleep = await Sleeps.findByIdAndUpdate(
+        sleepId,
+        sleepUpdate,
+        {
+          new: true,
+        }
+      );
+
+      res.status(200).json(updatedSleep);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.delete("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId, sleepId } = req.params;
 
   try {
+    const child = await Child.findById(childId);
+
+    if (!child) {
+      res.status(404).json({ message: "child not found!" });
+      return;
+    }
+
+    const sleep = await Sleeps.findById(sleepId);
+
+    if (!sleep) {
+      res.status(404).json({ message: "sleep not found!" });
+      return;
+    }
+    
     await Sleeps.findByIdAndRemove(sleepId);
 
     await Child.findByIdAndUpdate(childId, { $pull: { sleeps: sleepId } });

@@ -21,13 +21,18 @@ router.get("/all", async (req, res, next) => {
   }
 });
 
-router.get("/:childId", isChildOfLoggedParent ,async (req, res, next) => {
+router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   try {
-    const currentChild = await Child.findById(childId);
+    const child = await Child.findById(childId);
 
-    res.status(200).json(currentChild);
+    if (!child) {
+      res.status(404).json({ message: "child not found!" });
+      return;
+    }
+
+    res.status(200).json(child);
   } catch (error) {
     next(error);
   }
@@ -91,6 +96,13 @@ router.patch("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   }
 
   try {
+    const child = await Child.findById(childId);
+
+    if (!child) {
+      res.status(404).json({ message: "child not found!" });
+      return;
+    }
+
     const childToUpdate = await Child.findByIdAndUpdate(
       childId,
       {
@@ -121,6 +133,11 @@ router.delete("/:childId", isChildOfLoggedParent, async (req, res, next) => {
     );
 
     const childToDelete = await Child.findById(childId);
+
+    if (!childToDelete) {
+      res.status(404).json({ message: "child not found!" });
+      return;
+    }
 
     childToDelete.feeds.forEach(
       async (feedId) => await Feeds.findByIdAndRemove(feedId)
