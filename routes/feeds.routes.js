@@ -58,7 +58,7 @@ router.get(
   "/:childId/:feedId",
   isChildOfLoggedParent,
   async (req, res, next) => {
-    const { feedId } = req.params;
+    const { childId, feedId } = req.params;
 
     try {
       const child = await Child.findById(childId);
@@ -86,7 +86,7 @@ router.patch(
   "/:childId/:feedId",
   isChildOfLoggedParent,
   async (req, res, next) => {
-    const { feedId } = req.params;
+    const { childId, feedId } = req.params;
     const feedUpdate = { ...req.body };
 
     try {

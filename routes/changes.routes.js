@@ -59,7 +59,7 @@ router.get(
   "/:childId/:changeId",
   isChildOfLoggedParent,
   async (req, res, next) => {
-    const { changeId } = req.params;
+    const { childId, changeId } = req.params;
 
     // finds document from provided Id and returns it
     try {
@@ -88,7 +88,7 @@ router.patch(
   "/:childId/:changeId",
   isChildOfLoggedParent,
   async (req, res, next) => {
-    const { changeId } = req.params;
+    const { childId, changeId } = req.params;
     const changeUpdate = { ...req.body };
 
     // updates document and returns the updated version

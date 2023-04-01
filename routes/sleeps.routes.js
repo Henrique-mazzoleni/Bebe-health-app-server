@@ -55,12 +55,7 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
       return;
     }
 
-    const sleep = await Sleeps.findById(sleepId);
-
-    if (!sleep) {
-      res.status(404).json({ message: "sleep not found!" });
-      return;
-    }
+    const sleep = await Sleeps.create(newSleep);
 
     await Child.findByIdAndUpdate(childId, { $push: { sleeps: sleep._id } });
 
@@ -74,7 +69,7 @@ router.get(
   "/:childId/:sleepId",
   isChildOfLoggedParent,
   async (req, res, next) => {
-    const { sleepId } = req.params;
+    const { childId, sleepId } = req.params;
 
     try {
       const child = await Child.findById(childId);
@@ -102,7 +97,7 @@ router.patch(
   "/:childId/:sleepId",
   isChildOfLoggedParent,
   async (req, res, next) => {
-    const { sleepId } = req.params;
+    const { childId, sleepId } = req.params;
     const sleepUpdate = { ...req.body };
 
     try {
