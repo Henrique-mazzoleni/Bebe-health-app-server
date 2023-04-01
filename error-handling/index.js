@@ -11,9 +11,14 @@ module.exports = (app) => {
 
     // only render if the error ocurred before sending the response
     if (!res.headersSent) {
-      res.status(500).json({
-        message: "Internal server error. Check the server console",
-      });
+      if (err.code === "invalid_token")
+        res
+          .status(401)
+          .json({ message: "invalid token, try logging in again." });
+      else
+        res.status(500).json({
+          message: "Internal server error. Check the server console",
+        });
     }
   });
 };
