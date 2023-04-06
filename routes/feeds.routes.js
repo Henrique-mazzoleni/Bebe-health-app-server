@@ -25,8 +25,8 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
       _id: { $in: child.feeds },
     })
       .sort({ dateAndTime: 1 })
-      .skip((page - 1) * 20)
-      .limit(20);
+      .skip((page - 1) * 10)
+      .limit(10);
 
     res.status(200).json({ noOfItems: child.feeds.length, feeds: feedsPage });
   } catch (error) {

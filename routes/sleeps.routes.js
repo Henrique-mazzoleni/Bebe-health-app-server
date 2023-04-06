@@ -18,17 +18,25 @@ const getHoursDuration = (start, end) => {
 
 router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
-
+  const { page } = req.query;
   try {
-    const child = await Child.findById(childId).populate("sleeps");
+    const child = await Child.findById(childId);
 
     if (!child) {
       res.status(404).json({ message: "child not found!" });
       return;
     }
 
-    res.status(200).json(child.sleeps);
-  } catch (error) {
+    const sleepsPage = await Sleeps.find({
+      _id: { $in: child.sleeps },
+    })
+      .sort({ startTime: 1 })
+      .skip((page - 1) * 10)
+      .limit(10);
+
+    res.status(200).json({ noOfItems: child.sleeps.length, sleeps: sleepsPage });
+
+    } catch (error) {
     next(error);
   }
 });
