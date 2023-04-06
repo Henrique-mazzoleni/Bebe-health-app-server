@@ -1,23 +1,34 @@
+const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 
 const Child = require("../models/Child.model");
 const Changes = require("../models/Changes.model");
 
-const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+const {
+  isChildOfLoggedParent,
+} = require("../middleware/isChildOfLoggedParent.middleware");
 
 router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
+  const { page } = req.query;
   // through the id provided in the url paramater the route retrieves the document in the database and returns it to the client
   try {
-    const child = await Child.findById(childId).populate("changes");
+    const child = await Child.findById(childId); //.populate("changes");
 
     if (!child) {
       res.status(404).json({ message: "child not found!" });
       return;
     }
 
-    res.status(200).json(child.changes);
+    const changesPage = await Changes.find({
+      _id: { $in: child.changes },
+    })
+      .sort({ dateAndTime: 1 })
+      .skip((page - 1) * 20)
+      .limit(20);
+
+    res.status(200).json({ noOfItems: child.changes.length, changes: changesPage });
   } catch (error) {
     next(error);
   }
