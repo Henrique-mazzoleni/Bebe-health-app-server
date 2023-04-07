@@ -4,7 +4,9 @@ const router = express.Router();
 const Child = require("../models/Child.model");
 const Sleeps = require("../models/Sleeps.model");
 
-const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+const {
+  isChildOfLoggedParent,
+} = require("../middleware/isChildOfLoggedParent.middleware");
 
 const getHoursDuration = (start, end) => {
   const startDate = new Date(start);
@@ -15,6 +17,37 @@ const getHoursDuration = (start, end) => {
     ) / 10
   );
 };
+
+router.get(
+  "/average/:childId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { childId } = req.params;
+
+    try {
+      const child = await Child.findById(childId);
+
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const lastWeekSleeps = await Sleeps.find({
+        _id: { $in: child.sleeps },
+        startTime: { $gt: oneWeekAgo },
+      });
+
+      const durationsSum = lastWeekSleeps.reduce((acc, curr) => curr.duration + acc, 0)
+      const dailyAverage = durationsSum / 7;
+
+      res.status(200).json({ dailyAverage })
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
@@ -34,9 +67,10 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
       .skip((page - 1) * 10)
       .limit(10);
 
-    res.status(200).json({ noOfItems: child.sleeps.length, sleeps: sleepsPage });
-
-    } catch (error) {
+    res
+      .status(200)
+      .json({ noOfItems: child.sleeps.length, sleeps: sleepsPage });
+  } catch (error) {
     next(error);
   }
 });
@@ -148,32 +182,67 @@ router.patch(
   }
 );
 
-router.delete("/:childId/:sleepId", isChildOfLoggedParent, async (req, res, next) => {
-  const { childId, sleepId } = req.params;
+router.delete(
+  "/:childId/:sleepId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { childId, sleepId } = req.params;
 
-  try {
-    const child = await Child.findById(childId);
+    try {
+      const child = await Child.findById(childId);
 
-    if (!child) {
-      res.status(404).json({ message: "child not found!" });
-      return;
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+
+      const sleep = await Sleeps.findById(sleepId);
+
+      if (!sleep) {
+        res.status(404).json({ message: "sleep not found!" });
+        return;
+      }
+
+      await Sleeps.findByIdAndRemove(sleepId);
+
+      await Child.findByIdAndUpdate(childId, { $pull: { sleeps: sleepId } });
+
+      res.status(200).json({ message: "sleep removed successfully" });
+    } catch (error) {
+      next(error);
     }
-
-    const sleep = await Sleeps.findById(sleepId);
-
-    if (!sleep) {
-      res.status(404).json({ message: "sleep not found!" });
-      return;
-    }
-    
-    await Sleeps.findByIdAndRemove(sleepId);
-
-    await Child.findByIdAndUpdate(childId, { $pull: { sleeps: sleepId } });
-
-    res.status(200).json({ message: "sleep removed successfully" });
-  } catch (error) {
-    next(error);
   }
-});
+);
+
+router.get(
+  "/average/:childId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { childId } = req.params;
+
+    try {
+      const child = await Child.findById(childId);
+
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo - 7);
+
+      const lastWeekSleeps = await Sleeps.find({
+        _id: { $in: child.sleeps },
+        startDate: { $gt: oneWeekAgo },
+      });
+
+      const durationsSum = lastWeekSleeps.reduce((curr, acc) => curr.duration + acc, 0)
+      const dailyAverage = durationsSum / 7;
+
+      res.status(200).json({ dailyAverage })
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;

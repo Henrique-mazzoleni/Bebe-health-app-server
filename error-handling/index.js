@@ -17,7 +17,7 @@ module.exports = (app) => {
           .json({ message: "invalid token, try logging in again." });
       else
         res.status(500).json({
-          message: "Internal server error. Check the server console",
+          message: "Internal server error. Please try again. If error persist please contact the service provider.",
         });
     }
   });
