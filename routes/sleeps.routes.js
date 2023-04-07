@@ -30,7 +30,7 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
     const sleepsPage = await Sleeps.find({
       _id: { $in: child.sleeps },
     })
-      .sort({ startTime: 1 })
+      .sort({ startTime: -1 })
       .skip((page - 1) * 10)
       .limit(10);
 

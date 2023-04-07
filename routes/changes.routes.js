@@ -24,7 +24,7 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
     const changesPage = await Changes.find({
       _id: { $in: child.changes },
     })
-      .sort({ dateAndTime: 1 })
+      .sort({ dateAndTime: -1 })
       .skip((page - 1) * 10)
       .limit(10);
 
