@@ -9,6 +9,50 @@ const {
   isChildOfLoggedParent,
 } = require("../middleware/isChildOfLoggedParent.middleware");
 
+router.get(
+  "/average/:childId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { childId } = req.params;
+    try {
+      const child = await Child.findById(childId); //.populate("changes");
+
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+            
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+
+      const lastWeekChanges = await Changes.find({
+        _id: { $in: child.changes },
+        dateAndTime: { $gt: oneWeekAgo },
+        kind: { $in: ["dirty", "both"]},
+      })
+      const weeksDailyAverage = lastWeekChanges.length / 7
+
+      const lastMonthChanges = await Changes.find({
+        _id: { $in: child.changes},
+        dateAndTime: { $gt: oneMonthAgo },
+        kind: { $in: ["dirty", "both"]},
+      })
+      const monthsDailyAverage = lastMonthChanges.length / 7
+
+      const allChanges = await Changes.find({ _id: { $in: child.changes }}).sort({dateAndTime: -1})
+      const daysElapsed = Math.floor((new Date() - allChanges[allChanges.length-1].dateAndTime) / (1000 * 3600 * 24))
+      const allTimeAverage = allChanges.length / daysElapsed
+
+      res.status(200).json({weeksDailyAverage, monthsDailyAverage, allTimeAverage})
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
   const { page } = req.query;
@@ -28,7 +72,9 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
       .skip((page - 1) * 10)
       .limit(10);
 
-    res.status(200).json({ noOfItems: child.changes.length, changes: changesPage });
+    res
+      .status(200)
+      .json({ noOfItems: child.changes.length, changes: changesPage });
   } catch (error) {
     next(error);
   }

@@ -38,6 +38,7 @@ router.get(
         res.status(404).json({ message: "child not found!" });
         return;
       }
+      
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
