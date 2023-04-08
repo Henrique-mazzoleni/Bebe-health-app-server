@@ -24,6 +24,13 @@ router.get(
   async (req, res, next) => {
     const { childId } = req.params;
 
+    const goalTable = {
+      0.25: { max: 17, min: 14 },
+      1: { max: 16, min: 12 },
+      2: { max: 14, min: 11 },
+      5: { max: 13, min: 10 },
+    };
+
     try {
       const child = await Child.findById(childId);
 
@@ -37,7 +44,7 @@ router.get(
       const lastWeekSleeps = await Sleeps.find({
         _id: { $in: child.sleeps },
         startTime: { $gt: oneWeekAgo },
-      }).sort({ startTime: -1});
+      }).sort({ startTime: -1 });
 
       const durationsSum = lastWeekSleeps.reduce(
         (acc, curr) => curr.duration + acc,
@@ -45,11 +52,26 @@ router.get(
       );
       const dailyAverage = durationsSum / 7;
 
-      const windowMap = lastWeekSleeps.map((sleep, idx, arr) => idx + 1 < arr.length ? sleep.startTime - arr[idx + 1].endTime : null);
-      const windowSum = windowMap.reduce((acc, sleepDuration) => sleepDuration ? sleepDuration + acc : acc)
-      const window = windowSum / (windowMap.length - 1) / 3600000
+      const windowMap = lastWeekSleeps.map((sleep, idx, arr) =>
+        idx + 1 < arr.length ? sleep.startTime - arr[idx + 1].endTime : null
+      );
+      const windowSum = windowMap.reduce((acc, sleepDuration) =>
+        sleepDuration ? sleepDuration + acc : acc
+      );
+      const window = windowSum / (windowMap.length - 1) / 3600000;
 
-      res.status(200).json({ dailyAverage, window });
+      const age = (Date.now() - child.dateOfBirth) / (1000 * 3600 * 24 * 365);
+      const ages = Object.keys(goalTable).map(Number);
+      ages.sort();
+      let goal;
+      for (const tableAge of ages) {
+        if (age < tableAge) {
+          goal = goalTable[String(tableAge)]
+          break;
+        }
+      }
+
+      res.status(200).json({ dailyAverage, window, goal });
     } catch (error) {
       next(error);
     }
@@ -88,9 +110,7 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const newSleep = { ...req.body };
 
   if (!newSleep.startTime || !newSleep.endTime || !newSleep.location) {
-    res
-      .status(400)
-      .json({ message: "All fields must be provided" });
+    res.status(400).json({ message: "All fields must be provided" });
     return;
   }
 
