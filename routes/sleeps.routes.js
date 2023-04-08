@@ -37,12 +37,19 @@ router.get(
       const lastWeekSleeps = await Sleeps.find({
         _id: { $in: child.sleeps },
         startTime: { $gt: oneWeekAgo },
-      });
+      }).sort({ startTime: -1});
 
-      const durationsSum = lastWeekSleeps.reduce((acc, curr) => curr.duration + acc, 0)
+      const durationsSum = lastWeekSleeps.reduce(
+        (acc, curr) => curr.duration + acc,
+        0
+      );
       const dailyAverage = durationsSum / 7;
 
-      res.status(200).json({ dailyAverage })
+      const windowMap = lastWeekSleeps.map((sleep, idx, arr) => idx + 1 < arr.length ? sleep.startTime - arr[idx + 1].endTime : null);
+      const windowSum = windowMap.reduce((acc, sleepDuration) => sleepDuration ? sleepDuration + acc : acc)
+      const window = windowSum / (windowMap.length - 1) / 3600000
+
+      res.status(200).json({ dailyAverage, window });
     } catch (error) {
       next(error);
     }
@@ -80,10 +87,10 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
 
   const newSleep = { ...req.body };
 
-  if (!newSleep.startTime || !newSleep.endTime) {
+  if (!newSleep.startTime || !newSleep.endTime || !newSleep.location) {
     res
       .status(400)
-      .json({ message: "date, start and end Time fields must be provided" });
+      .json({ message: "All fields must be provided" });
     return;
   }
 
@@ -235,10 +242,13 @@ router.get(
         startDate: { $gt: oneWeekAgo },
       });
 
-      const durationsSum = lastWeekSleeps.reduce((curr, acc) => curr.duration + acc, 0)
+      const durationsSum = lastWeekSleeps.reduce(
+        (curr, acc) => curr.duration + acc,
+        0
+      );
       const dailyAverage = durationsSum / 7;
 
-      res.status(200).json({ dailyAverage })
+      res.status(200).json({ dailyAverage });
     } catch (error) {
       next(error);
     }
