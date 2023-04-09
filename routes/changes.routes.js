@@ -40,7 +40,7 @@ router.get(
         dateAndTime: { $gt: oneMonthAgo },
         kind: { $in: ["dirty", "both"]},
       })
-      const monthsDailyAverage = lastMonthChanges.length / 7
+      const monthsDailyAverage = lastMonthChanges.length / 30
 
       const allChanges = await Changes.find({ _id: { $in: child.changes }}).sort({dateAndTime: -1})
       const daysElapsed = Math.floor((new Date() - allChanges[allChanges.length-1].dateAndTime) / (1000 * 3600 * 24))

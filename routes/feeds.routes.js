@@ -8,6 +8,38 @@ const {
   isChildOfLoggedParent,
 } = require("../middleware/isChildOfLoggedParent.middleware");
 
+router.get(
+  "/average/:childId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { childId } = req.params;
+    try {
+      const child = await Child.findById(childId); //.populate("changes");
+
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+            
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const lastWeekFeeds = await Feeds.find({
+        _id: { $in: child.feeds },
+        dateAndTime: { $gt: oneWeekAgo },
+      })
+
+      const rightBreastDuration = lastWeekFeeds.reduce((acc, feed) => feed.rightBreastDuration ? feed.rightBreastDuration + acc : acc, 0) / 60
+      const leftBreastDuration = lastWeekFeeds.reduce((acc, feed) => feed.leftBreastDuration ? feed.leftBreastDuration + acc : acc, 0) / 60
+      const bottleVolume = lastWeekFeeds.reduce((acc, feed) => feed.bottleVolume ? feed.bottleVolume + acc : acc, 0)
+
+      res.status(200).json({rightBreastAverage: rightBreastDuration / 7, leftBreastAverage: leftBreastDuration / 7, bottleAverage: bottleVolume / 7})
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
   const { page } = req.query;
@@ -38,6 +70,12 @@ router.post("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
 
   const createObject = { ...req.body };
+
+  if (createObject.kind === "breast") createObject.bottleVolume = null
+  else {
+    createObject.rightBreastDuration = null;
+    createObject.leftBreastAverage = null;
+  }
 
   if (!createObject.dateAndTime || !createObject.kind) {
     res.status(400).json({ message: "date and kind fields must be provided" });
@@ -96,6 +134,12 @@ router.patch(
   async (req, res, next) => {
     const { childId, feedId } = req.params;
     const feedUpdate = { ...req.body };
+
+    if (feedUpdate.kind === "breast") feedUpdate.bottleVolume = null
+    else {
+      feedUpdate.rightBreastDuration = null;
+      feedUpdate.leftBreastAverage = null;
+    }
 
     try {
       const child = await Child.findById(childId);
