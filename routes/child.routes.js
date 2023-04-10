@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const fileUploader = require("../config/cloudinary.config");
 
 const Parent = require("../models/Parent.model");
 const Child = require("../models/Child.model");
@@ -7,7 +8,9 @@ const Feeds = require("../models/Feeds.model");
 const Change = require("../models/Changes.model");
 const Sleep = require("../models/Sleeps.model");
 
-const { isChildOfLoggedParent } = require('../middleware/isChildOfLoggedParent.middleware')
+const {
+  isChildOfLoggedParent,
+} = require("../middleware/isChildOfLoggedParent.middleware");
 
 router.get("/all", async (req, res, next) => {
   const { email } = req.payload;
@@ -38,88 +41,110 @@ router.get("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
-  const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
+router.post(
+  "/picture-upload",
+  fileUploader.single("pictureURL"),
+  (req, res, next) => {
+    if (!req.file) {
+      res.status(400).json({ message: "No Picture File Uploaded!"})
+      return
+    }
 
-  // Check if any of the fields are provided as empty strings
-  if (
-    name === "" ||
-    dateOfBirth === "" ||
-    gender === "" ||
-    weightAtBirth === "" ||
-    sizeAtBirth === ""
-  ) {
-    res.status(400).json({ message: "All fields must be provided" });
-    return;
+    res.status(200).json({ pictureURL: req.file.path })
   }
+)
 
-  const { email } = req.payload;
+router.post(
+  "/",
+  async (req, res, next) => {
+    const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth, pictureURL } = req.body;
 
-  try {
-    const loggedParent = await Parent.findOne({ email });
-
-    const newChild = await Child.create({
-      name,
-      dateOfBirth,
-      gender,
-      weightAtBirth,
-      sizeAtBirth,
-    });
-
-    newChild.parents.push(loggedParent._id);
-    await newChild.save();
-
-    loggedParent.children.push(newChild._id);
-    await loggedParent.save();
-
-    res.status(201).json(newChild);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.patch("/:childId", isChildOfLoggedParent, async (req, res, next) => {
-  const { childId } = req.params;
-
-  const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
-
-  // Check if any of the fields are provided as empty strings
-  if (
-    name === "" ||
-    dateOfBirth === "" ||
-    gender === "" ||
-    weightAtBirth === "" ||
-    sizeAtBirth === ""
-  ) {
-    res.status(400).json({ message: "All fields must be provided" });
-    return;
-  }
-
-  try {
-    const child = await Child.findById(childId);
-
-    if (!child) {
-      res.status(404).json({ message: "child not found!" });
+    // Check if any of the fields are provided as empty strings
+    if (
+      name === "" ||
+      dateOfBirth === "" ||
+      gender === "" ||
+      weightAtBirth === "" ||
+      sizeAtBirth === ""
+    ) {
+      res.status(400).json({ message: "All fields must be provided" });
       return;
     }
 
-    const childToUpdate = await Child.findByIdAndUpdate(
-      childId,
-      {
+    const { email } = req.payload;
+
+    try {
+      const loggedParent = await Parent.findOne({ email });
+
+      const newChild = await Child.create({
         name,
         dateOfBirth,
         gender,
         weightAtBirth,
         sizeAtBirth,
-      },
-      { new: true }
-    );
+        pictureURL,
+      });
 
-    res.status(200).json(childToUpdate);
-  } catch (error) {
-    next(error);
+      newChild.parents.push(loggedParent._id);
+      await newChild.save();
+
+      loggedParent.children.push(newChild._id);
+      await loggedParent.save();
+
+      res.status(201).json(newChild);
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
+
+router.patch(
+  "/:childId",
+  isChildOfLoggedParent,
+  async (req, res, next) => {
+    const { childId } = req.params;
+
+    const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth, pictureURL } = req.body;
+
+    // Check if any of the fields are provided as empty strings
+    if (
+      name === "" ||
+      dateOfBirth === "" ||
+      gender === "" ||
+      weightAtBirth === "" ||
+      sizeAtBirth === ""
+    ) {
+      res.status(400).json({ message: "All fields must be provided" });
+      return;
+    }
+
+    try {
+      const child = await Child.findById(childId);
+
+      if (!child) {
+        res.status(404).json({ message: "child not found!" });
+        return;
+      }
+
+      const childToUpdate = await Child.findByIdAndUpdate(
+        childId,
+        {
+          name,
+          dateOfBirth,
+          gender,
+          weightAtBirth,
+          sizeAtBirth,
+          pictureURL,
+        },
+        { new: true }
+      );
+
+      res.status(200).json(childToUpdate);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.delete("/:childId", isChildOfLoggedParent, async (req, res, next) => {
   const { childId } = req.params;
