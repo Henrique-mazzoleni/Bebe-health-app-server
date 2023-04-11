@@ -104,7 +104,8 @@ router.patch(
   async (req, res, next) => {
     const { childId } = req.params;
 
-    const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth, pictureURL } = req.body;
+    const { name, dateOfBirth, gender, weightAtBirth, sizeAtBirth } = req.body;
+    let { pictureURL } = req.body
 
     // Check if any of the fields are provided as empty strings
     if (
@@ -121,11 +122,14 @@ router.patch(
     try {
       const child = await Child.findById(childId);
 
+      
       if (!child) {
         res.status(404).json({ message: "child not found!" });
         return;
       }
-
+      
+      if (pictureURL === '') pictureURL = child.pictureURL
+      
       const childToUpdate = await Child.findByIdAndUpdate(
         childId,
         {
