@@ -25,28 +25,21 @@ router.get(
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-
-      const lastWeekChanges = await Changes.find({
+     const dirtyChanges = await Changes.find({
         _id: { $in: child.changes },
         dateAndTime: { $gt: oneWeekAgo },
         kind: { $in: ["dirty", "both"]},
       })
-      const weeksDailyAverage = lastWeekChanges.length / 7
+      const dirtyAverage = dirtyChanges.length / 7
 
-      const lastMonthChanges = await Changes.find({
+      const wetChanges = await Changes.find({
         _id: { $in: child.changes},
-        dateAndTime: { $gt: oneMonthAgo },
-        kind: { $in: ["dirty", "both"]},
+        dateAndTime: { $gt: oneWeekAgo },
+        kind: { $in: ["wet", "both"]},
       })
-      const monthsDailyAverage = lastMonthChanges.length / 30
+      const wetAverage = wetChanges.length / 7
 
-      const allChanges = await Changes.find({ _id: { $in: child.changes }}).sort({dateAndTime: -1})
-      const daysElapsed = Math.floor((new Date() - allChanges[allChanges.length-1].dateAndTime) / (1000 * 3600 * 24))
-      const allTimeAverage = allChanges.length / daysElapsed
-
-      res.status(200).json({weeksDailyAverage, monthsDailyAverage, allTimeAverage})
+      res.status(200).json({dirtyAverage, wetAverage })
     } catch (error) {
       next(error);
     }
