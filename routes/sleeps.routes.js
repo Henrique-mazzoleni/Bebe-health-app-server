@@ -57,7 +57,8 @@ router.get(
         idx + 1 < arr.length ? sleep.startTime - arr[idx + 1].endTime : null
       );
       const windowSum = windowMap.reduce((acc, sleepDuration) =>
-        sleepDuration ? sleepDuration + acc : acc
+        sleepDuration ? sleepDuration + acc : acc,
+        0
       );
       const window = windowSum / (windowMap.length - 1) / 3600000;
 
