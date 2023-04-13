@@ -1,7 +1,26 @@
 
-# Bebe Health Tracker
+![Logo](https://bebe-health.netlify.app/assets/bebehealthlogo-607eb7d8.png)
+# Bebe Health Tracker - Server Side
 
 ## IronHack Bootcamp module 3 project
+
+### Description
+
+The Bebe Health Tracker was developed by Henrique Mazzoleni and Craig Butler as part of the IronHack Web Development bootcamp.
+
+The tracker can be used by all the people involved in the caring for a young child. It allows carers to track all aspects of a child's routine from feeds and naps to changes and more.
+
+### Link to Deployed App
+
+- [Bebe Health App](https://bebe-health.netlify.app/)
+- [Bebe Health Tracker - Client GitHub Page](https://github.com/Henrique-mazzoleni/Bebe-health-app-client)
+
+## Features
+
+- Log childs feeds, naps and changes
+- Add and manage multiple children
+- Invite other guardians to a childs record
+- Upload an image of child
 
 ### Technical Requirements
 
@@ -17,14 +36,6 @@ Develop a full-stack application that must meet the following technical requirem
 - Have a backend validation and centralized error handling in your REST API.
 - Be deployed online, allowing anyone to access and use your app.
 
-### Description
-
-The Bebe Health Tracker was developed by Henrique Mazzoleni and Craig Butler as part of the IronHack Web Development bootcamp.
-
-The tracker can be used by all the people involved in the caring for a young child. It allows carers to track all aspects of a child's routine from feeds and naps to changes and more.
-
-
-
 
 
 
@@ -34,12 +45,8 @@ The tracker can be used by all the people involved in the caring for a young chi
 - [@Henrique-mazzoleni](https://github.com/Henrique-mazzoleni)
 
 
-## Features
-
-- Log childs feeds, naps and changes
-- Add and manage multiple children
-- Invite other guardians to a childs record
 
 
-![Logo](https://github.com/Henrique-mazzoleni/Bebe-health-app-client/blob/main/src/assets/images/bebehealthlogo.jpg?raw=true)
+
+
 
